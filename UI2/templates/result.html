@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head><title>Prediction Result</title></head>
+<body>
+    <h2>Prediction Results</h2>
+    {{ tables[0]|safe }}
+    <h3>Classification Summary</h3>
+    <img src="{{ url_for('static', filename='plot.png') }}" alt="Pie Chart">
+</body>
+</html>
