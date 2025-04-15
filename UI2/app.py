@@ -44,6 +44,40 @@ def upload():
             return redirect(url_for("result", filename=file.filename))
     return render_template("upload.html")
 
+# @app.route("/result/<filename>")
+# def result(filename):
+#     filepath = os.path.join(UPLOAD_FOLDER, filename)
+#     df = pd.read_csv(filepath)
+
+#     X_scaled = scaler.transform(df.values)
+#     X_tensor = torch.tensor(X_scaled, dtype=torch.float32).to(device)
+
+#     with torch.no_grad():
+#         preds = model(X_tensor)
+#         predicted_classes = preds.argmax(dim=1).cpu().numpy()
+    
+#     # Assuming predictions is a NumPy array of class indices
+#     predicted_labels = [label_map[int(p)] for p in predicted_classes]
+
+#     df["Predicted_Class"] = predicted_labels
+
+#     # Plot pie chart
+#     class_counts = df["Predicted_Class"].value_counts()
+#     plt.figure(figsize=(6, 6))
+#     plt.pie(class_counts, labels=class_counts.index, autopct="%1.1f%%", startangle=140)
+#     plt.title("Traffic Classification")
+#     plot_path = os.path.join("static", "plot.png")
+#     plt.savefig(plot_path)
+#     plt.close()
+
+#     # Render result page
+#     return render_template("result.html", tables=[df.head(10).to_html(classes="data")], plot_url=plot_path)
+
+@app.route("/result")
+def result_no_file():
+    return render_template("result_empty.html")
+
+
 @app.route("/result/<filename>")
 def result(filename):
     filepath = os.path.join(UPLOAD_FOLDER, filename)
@@ -61,17 +95,29 @@ def result(filename):
 
     df["Predicted_Class"] = predicted_labels
 
+    # Class count for pie and bar charts
+    class_counts = df["Predicted_Class"].value_counts().to_dict()
+
     # Plot pie chart
-    class_counts = df["Predicted_Class"].value_counts()
+    class_labels = list(class_counts.keys())
+    class_data = list(class_counts.values())
+
+    # Save the class counts for passing to the frontend
+    class_counts_json = class_counts
+
+    # Plot pie chart
     plt.figure(figsize=(6, 6))
-    plt.pie(class_counts, labels=class_counts.index, autopct="%1.1f%%", startangle=140)
+    plt.pie(class_data, labels=class_labels, autopct="%1.1f%%", startangle=140, 
+            colors=['#8ECAE6', '#219EBC', '#023047', '#FFB703', '#FB8500'])
     plt.title("Traffic Classification")
     plot_path = os.path.join("static", "plot.png")
     plt.savefig(plot_path)
     plt.close()
 
-    # Render result page
-    return render_template("result.html", tables=[df.head(100).to_html(classes="data")], plot_url=plot_path)
+    # Render result page with class counts
+    return render_template("result.html", tables=[df.head(10).to_html(classes="data")], 
+                           plot_url=plot_path, class_counts=class_counts_json)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
