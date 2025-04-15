@@ -21,5 +21,8 @@ class CNNClassifier(nn.Module):
         )
     def forward(self, x):
         return self.net(x)
+    
+# pip install flask pandas torch scikit-learn joblib matplotlib
+
 
 
